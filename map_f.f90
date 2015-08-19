@@ -105,7 +105,6 @@ MC: do mcs = 1, nmcs
       pc = pc + dt2*fc
       
       call get_hm(delta,mu,et,a1,a2,av1,av2,pc,oc,qc,hm)
-      call make_hmtraceless(nmap,hm)
 
       call evolve_pm(nmap,dt2,hm,rm,pm)
       call evolve_pm(nmap,dt2,hm,rn,pn)
@@ -122,7 +121,6 @@ MC: do mcs = 1, nmcs
       av2 = 2d0*kc*qc
 
       call update_hm(a1,a2,av1,av2,pc,oc,qc,hm)
-      call make_hmtraceless(nmap,hm)
 
       call evolve_rm(nmap,dt,hm,pm,rm)
       call evolve_rm(nmap,dt,hm,pn,rn)
@@ -269,25 +267,25 @@ do j = 1, n
    f(j) = -kosc(j)*x(j)
    
    !original dh/dR 
-   dh = 0d0 
-   dh(3,3)= c2(j)
+!   dh = 0d0 
+!   dh(3,3)= c2(j)
    
-   trace = 0d0
-   do a = 1, nmap
-      trace = trace + dh(a,a)
-   end do
+   trace = -2d0*c2(j)
+!   do a = 1, nmap
+!      trace = trace + dh(a,a)
+!   end do
    !traceless
-   do a = 1, nmap
-      dh(a,a) = dh(a,a) - trace/nmap
-   end do
+!   do a = 1, nmap
+!      dh(a,a) = dh(a,a) - trace/nmap
+!   end do
    
-   do a = 1, nmap
-      b = a
-      f(j) = f(j) - 0.5d0*dh(a,b)* &
-                  (rm(a)*rm(b) + pm(a)*pm(b) + rn(a)*rn(b) + pn(a)*pn(b) )
-   end do
+!   do a = 1, nmap
+!      b = a
+      f(j) = f(j) + (-c2(j))* &
+                  (rm(3)*rm(3) + pm(3)*pm(3) + rn(3)*rn(3) + pn(3)*pn(3) )
+!   end do
 
-   f(j) = f(j) - trace/nmap
+   f(j) = f(j) - trace
 end do
 
 end subroutine get_force_bath
