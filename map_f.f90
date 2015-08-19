@@ -337,7 +337,6 @@ real(8),intent(in) :: a1,a2,av1,av2,pc,oc,qc
 real(8),dimension(:,:),intent(inout) :: hm
 
 ev = 0.5d0*(pc**2 + (oc*qc)**2)
-ev = 0d0
 
 !only diagonal part is updated
 !1 x 1
@@ -383,7 +382,6 @@ real(8),intent(in) :: delta,mu,et,a1,a2,pc,oc,qc,av1,av2
 real(8),dimension(:,:),intent(out) :: hm
 
 ev = 0.5d0*(pc**2 + (oc*qc)**2)
-ev = 0d0
 
 hm = 0d0
 !1 x 1
