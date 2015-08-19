@@ -281,7 +281,7 @@ do j = 1, n
    
 !   do a = 1, nmap
 !      b = a
-      f(j) = f(j) + (-c2(j))* &
+      f(j) = f(j) + 0.5d0*(-c2(j))* &
                   (rm(3)*rm(3) + pm(3)*pm(3) + rn(3)*rn(3) + pn(3)*pn(3) )
 !   end do
 
