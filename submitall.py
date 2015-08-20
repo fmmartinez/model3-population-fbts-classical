@@ -2,7 +2,7 @@
 import os
 import shutil
 
-nproc = 25
+nproc = 10
 
 dirs = []
 
