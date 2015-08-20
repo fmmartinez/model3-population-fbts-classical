@@ -285,7 +285,7 @@ do j = 1, n
                   (rm(3)*rm(3) + pm(3)*pm(3) + rn(3)*rn(3) + pn(3)*pn(3) )
 !   end do
 
-   f(j) = f(j) - trace
+   f(j) = f(j) + trace
 end do
 
 end subroutine get_force_bath
@@ -323,7 +323,7 @@ trace = 3d0*kc
    f = f - 0.5d0*(kc*(rm(2)**2 + pm(2)**2 + rn(2)**2 + pn(2)**2) + (kc/2d0)*(rm(3)**2 + pm(3)**2 + rn(3)**2 + pn(3)**2))
 !end do
 
-f = f - trace
+f = f + trace
 end subroutine get_force_coupledosc
 
 subroutine update_hm(a1,a2,av1,av2,pc,oc,qc,hm)
