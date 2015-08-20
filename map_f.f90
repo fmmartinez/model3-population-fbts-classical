@@ -305,24 +305,25 @@ real(8),dimension(1:3,1:3) :: dh
 f = -oc**2*qc
 
 !original dh/dq
-dh = 0d0
-dh(2,2) = -kc
-dh(3,3) = -0.25d0*kc
+!dh = 0d0
+!dh(2,2) = 2d0*kc
+!dh(3,3) = kc
 
-trace = 0d0
-do a = 1, nmap
-   trace = trace + dh(a,a)
-end do
+trace = 3d0*kc
+!do a = 1, nmap
+!   trace = trace + dh(a,a)
+!end do
 
-do a = 1, nmap
-   dh(a,a) = dh(a,a) - trace/nmap
-end do
+!do a = 1, nmap
+!   dh(a,a) = dh(a,a) - trace/nmap
+!end do
 
-do a = 1, nmap
-   b = a
-   f = f - 0.5d0*dh(a,a)*(rm(a)*rm(b) + pm(a)*pm(b) + rn(a)*rn(b) + pn(a)*pn(b))
-end do
+!do a = 1, nmap
+!   b = a
+   f = f - 0.5d0*(kc*(rm(2)**2 + pm(2)**2 + rn(2)**2 + pn(2)**2) + (kc/2d0)*(rm(2)**2 + pm(2)**2 + rn(2)**2 + pn(2)**2))
+!end do
 
+f = f - trace
 end subroutine get_force_coupledosc
 
 subroutine update_hm(a1,a2,av1,av2,pc,oc,qc,hm)
