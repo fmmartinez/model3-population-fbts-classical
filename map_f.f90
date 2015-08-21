@@ -10,12 +10,12 @@ complex(8) :: coeff,fact1,fact2,fact3
 complex(8),dimension(:),allocatable :: pop,pop1,pop2,pop3
 
 integer :: i,j,ng,nb,nd,basispc,stp
-integer :: np,nosc,nmcs,nmds,seed_dimension,bath,init,mcs,it,is,ib
+integer :: np,nosc,nmcs,nmds,seed_dimension,bath,init,mcs,it,is,ib,ie,je
 !integer,dimension(:),allocatable :: seed
 
 real(8) :: delta,ome_max,dt,lumda_d,eg,eb,ed,mu,e0,beta,time_j,taw_j,omega_j,check
 real(8) :: dt2,uj,qbeta,lambdacheck,a1,a2,et,gaussian
-real(8) :: pc,qc,av1,av2,fc
+real(8) :: pc,qc,av1,av2,fc,etotal,eclas,equan,tracelel
 real(8),dimension(1:3) :: rm,pm,rn,pn
 real(8),dimension(:),allocatable :: ome,c2,kosc,x,p,fx
 real(8),dimension(:,:),allocatable :: hm
@@ -144,6 +144,28 @@ MC: do mcs = 1, nmcs
       pop1(ib) = pop1(ib) + (fact1)
       pop2(ib) = pop2(ib) + (fact2)
       pop3(ib) = pop3(ib) + (fact3)
+
+      if (mcs == 3) then
+         etotal = 0d0
+         do is = 1, nosc
+            etotal = 0.5d0*(p(is)**2 + kosc(is)*x(is)**2)
+         end do
+         eclas = etotal
+         tracelel = 0d0
+         do is = 1,3
+            tracelel = tracelel + hm(is,is)
+         end do
+         etotal = etotal - tracelel
+         do ie = 1,3
+            do je = 1,3
+               etotal = etotal + 0.25d0*hm(ie,je)*(rm(ie)*rm(je) + pm(ie)*pm(je) + rn(ie)*rn(je) + pn(ie)*pn(je))
+            end do
+         end do
+         equan = etotal - eclas + tracelel
+
+         write(69,'(i5,4f20.14)') it, eclas,tracelel,equan,etotal
+         if (it == nmds) stop
+      end if
    end do MD
 
    if (mod(mcs,1000) == 0) then
