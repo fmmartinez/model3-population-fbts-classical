@@ -71,7 +71,7 @@ MC: do mcs = 1, nmcs
       pn = 0d0
    end if
    
-   coeff = 0.25d0*(cmplx(rm(1),-pm(1))*cmplx(rn(1),pn(1)))
+   coeff = 0.25d0*(cmplx(rm(1),pm(1))*cmplx(rn(1),-pn(1)))
    
    call get_force_bath(nmap,kosc,x,c2,rm,pm,rn,pn,fx)
    call get_force_coupledosc(nmap,oc,qc,kc,rm,pm,rn,pn,fc)
@@ -105,7 +105,8 @@ MC: do mcs = 1, nmcs
       pc = pc + dt2*fc
       
       call get_hm(delta,mu,et,a1,a2,av1,av2,pc,oc,qc,hm)
-
+      call make_hmtraceless(nmap,hm,tracelel)
+      
       call evolve_pm(nmap,dt2,hm,rm,pm)
       call evolve_pm(nmap,dt2,hm,rn,pn)
 
@@ -121,6 +122,7 @@ MC: do mcs = 1, nmcs
       av2 = 2d0*kc*qc
 
       call update_hm(a1,a2,av1,av2,pc,oc,qc,hm)
+      call make_hmtraceless(nmap,hm,tracelel)
 
       call evolve_rm(nmap,dt,hm,pm,rm)
       call evolve_rm(nmap,dt,hm,pn,rn)
@@ -145,27 +147,25 @@ MC: do mcs = 1, nmcs
       pop2(ib) = pop2(ib) + (fact2)
       pop3(ib) = pop3(ib) + (fact3)
 
-      if (mcs == 3) then
-         etotal = 0d0
-         do is = 1, nosc
-            etotal = 0.5d0*(p(is)**2 + kosc(is)*x(is)**2)
-         end do
-         eclas = etotal
-         tracelel = 0d0
-         do is = 1,3
-            tracelel = tracelel + hm(is,is)
-         end do
-         etotal = etotal - tracelel
-         do ie = 1,3
-            do je = 1,3
-               etotal = etotal + 0.25d0*hm(ie,je)*(rm(ie)*rm(je) + pm(ie)*pm(je) + rn(ie)*rn(je) + pn(ie)*pn(je))
-            end do
-         end do
-         equan = etotal - eclas + tracelel
-
-         write(69,'(i5,4f20.14)') it, eclas,tracelel,equan,etotal
-         if (it == nmds) stop
-      end if
+!      if (mcs == 1) then
+!         etotal = 0d0
+!         do is = 1, nosc
+!            etotal = 0.5d0*(p(is)**2 + kosc(is)*x(is)**2)
+!         end do
+!         eclas = etotal
+!         
+!         etotal = etotal + tracelel/3d0
+!         
+!         do ie = 1,3
+!            do je = 1,3
+!               etotal = etotal + 0.25d0*hm(ie,je)*(rm(ie)*rm(je) + pm(ie)*pm(je) + rn(ie)*rn(je) + pn(ie)*pn(je))
+!            end do
+!         end do
+!         equan = etotal - eclas - tracelel/3d0
+!
+!         write(69,'(i5,4f20.14)') it, eclas,tracelel/3d0,equan,etotal
+!         if (it == nmds) stop
+!      end if
    end do MD
 
    if (mod(mcs,1000) == 0) then
@@ -242,17 +242,17 @@ real(8),dimension(:),intent(in) :: rm,pm,rn,pn
 
 fact1 = 0d0
 do a = 1, vg
-   fact1 = fact1 + coeff*(cmplx(rm(a),pm(a))*cmplx(rn(a),-pn(a)))
+   fact1 = fact1 + coeff*(cmplx(rm(a),-pm(a))*cmplx(rn(a),pn(a)))
 end do
 
 fact2 = 0d0
 do a = vg+1, vg+vb
-   fact2 = fact2 + coeff*(cmplx(rm(a),pm(a))*cmplx(rn(a),-pn(a)))
+   fact2 = fact2 + coeff*(cmplx(rm(a),-pm(a))*cmplx(rn(a),pn(a)))
 end do
 
 fact3 = 0d0
 do a = vg+vb+1, vg+vb+vd
-   fact3 = fact3 + coeff*(cmplx(rm(a),pm(a))*cmplx(rn(a),-pn(a)))
+   fact3 = fact3 + coeff*(cmplx(rm(a),-pm(a))*cmplx(rn(a),pn(a)))
 end do
 end subroutine get_facts_pop
 
@@ -277,10 +277,10 @@ implicit none
 integer :: a,b,i,j,n
 integer,intent(in) :: nmap
 
-real(8) :: trace
+real(8) :: ts
 real(8),dimension(:),intent(in) :: kosc,x,c2,rm,pm,rn,pn
 real(8),dimension(:),intent(out) :: f
-real(8),dimension(1:3,1:3) :: dh
+real(8),dimension(1:3,1:3) :: mdh
 
 n = size(x)
 
@@ -288,26 +288,25 @@ f = 0d0
 do j = 1, n
    f(j) = -kosc(j)*x(j)
    
-   !original dh/dR 
-!   dh = 0d0 
-!   dh(3,3)= c2(j)
+   !original -dh/dR 
+   mdh = 0d0 
+   mdh(3,3)= -2d0*c2(j)
    
-   trace = -2d0*c2(j)
+   ts = -2d0*c2(j)/3d0
 !   do a = 1, nmap
 !      trace = trace + dh(a,a)
 !   end do
    !traceless
-!   do a = 1, nmap
-!      dh(a,a) = dh(a,a) - trace/nmap
-!   end do
+   do a = 1, nmap
+      mdh(a,a) = mdh(a,a) - ts
+   end do
    
-!   do a = 1, nmap
-!      b = a
-      f(j) = f(j) + 0.5d0*(-c2(j))* &
-                  (rm(3)*rm(3) + pm(3)*pm(3) + rn(3)*rn(3) + pn(3)*pn(3) )
-!   end do
+   do a = 1, nmap
+      f(j) = f(j) + 0.25d0*mdh(a,a)* &
+                  (rm(a)*rm(a) + pm(a)*pm(a) + rn(a)*rn(a) + pn(a)*pn(a) )
+   end do
 
-   f(j) = f(j) + trace
+   f(j) = f(j) + ts
 end do
 
 end subroutine get_force_bath
@@ -342,10 +341,10 @@ trace = 3d0*kc
 
 !do a = 1, nmap
 !   b = a
-   f = f - 0.5d0*(kc*(rm(2)**2 + pm(2)**2 + rn(2)**2 + pn(2)**2) + (kc/2d0)*(rm(3)**2 + pm(3)**2 + rn(3)**2 + pn(3)**2))
+   f = f - 0.25d0*(-kc*(rm(1)**2 + pm(1)**2 + rn(1)**2 + pn(1)**2) + kc*(rm(2)**2 + pm(2)**2 + rn(2)**2 + pn(2)**2))
 !end do
 
-f = f + trace
+f = f + kc
 end subroutine get_force_coupledosc
 
 subroutine update_hm(a1,a2,av1,av2,pc,oc,qc,hm)
@@ -372,13 +371,13 @@ hm(3,3) = ed + ev + a1 + a2 + 0.25d0*av1 - 0.5d0*av2
 
 end subroutine update_hm
 
-subroutine make_hmtraceless(nmap,hm)
+subroutine make_hmtraceless(nmap,hm,trace)
 implicit none
 
 integer :: i
 integer,intent(in) :: nmap
 
-real(8) :: trace
+real(8),intent(out) :: trace
 real(8),dimension(:,:),intent(inout) :: hm
 
 trace = 0d0
