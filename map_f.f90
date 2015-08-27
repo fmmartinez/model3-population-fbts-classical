@@ -71,7 +71,7 @@ MC: do mcs = 1, nmcs
       pn = 0d0
    end if
    
-   coeff = 0.25d0*(cmplx(rm(1),-pm(1))*cmplx(rn(1),pn(1)))
+   coeff = 0.25d0*(cmplx(rm(1),pm(1))*cmplx(rn(1),-pn(1)))
    
    call get_force_bath(nmap,kosc,x,c2,rm,pm,rn,pn,fx)
    call get_force_coupledosc(nmap,oc,qc,kc,rm,pm,rn,pn,fc)
@@ -147,25 +147,25 @@ MC: do mcs = 1, nmcs
       pop2(ib) = pop2(ib) + (fact2)
       pop3(ib) = pop3(ib) + (fact3)
 
-      if (mcs == 1) then
-         etotal = 0d0
-         do is = 1, nosc
-            etotal = 0.5d0*(p(is)**2 + kosc(is)*x(is)**2)
-         end do
-         eclas = etotal
-         
-         etotal = etotal + tracelel/3d0
-         
-         do ie = 1,3
-            do je = 1,3
-               etotal = etotal + 0.25d0*hm(ie,je)*(rm(ie)*rm(je) + pm(ie)*pm(je) + rn(ie)*rn(je) + pn(ie)*pn(je))
-            end do
-         end do
-         equan = etotal - eclas - tracelel/3d0
-
-         write(69,'(i5,4f20.14)') it, eclas,tracelel/3d0,equan,etotal
-         if (it == nmds) stop
-      end if
+!      if (mcs == 1) then
+!         etotal = 0d0
+!         do is = 1, nosc
+!            etotal = 0.5d0*(p(is)**2 + kosc(is)*x(is)**2)
+!         end do
+!         eclas = etotal
+!         
+!         etotal = etotal + tracelel/3d0
+!         
+!         do ie = 1,3
+!            do je = 1,3
+!               etotal = etotal + 0.25d0*hm(ie,je)*(rm(ie)*rm(je) + pm(ie)*pm(je) + rn(ie)*rn(je) + pn(ie)*pn(je))
+!            end do
+!         end do
+!         equan = etotal - eclas - tracelel/3d0
+!
+!         write(69,'(i5,4f20.14)') it, eclas,tracelel/3d0,equan,etotal
+!         if (it == nmds) stop
+!      end if
    end do MD
 
    if (mod(mcs,1000) == 0) then
@@ -242,17 +242,17 @@ real(8),dimension(:),intent(in) :: rm,pm,rn,pn
 
 fact1 = 0d0
 do a = 1, vg
-   fact1 = fact1 + coeff*(cmplx(rm(a),pm(a))*cmplx(rn(a),-pn(a)))
+   fact1 = fact1 + coeff*(cmplx(rm(a),-pm(a))*cmplx(rn(a),pn(a)))
 end do
 
 fact2 = 0d0
 do a = vg+1, vg+vb
-   fact2 = fact2 + coeff*(cmplx(rm(a),pm(a))*cmplx(rn(a),-pn(a)))
+   fact2 = fact2 + coeff*(cmplx(rm(a),-pm(a))*cmplx(rn(a),pn(a)))
 end do
 
 fact3 = 0d0
 do a = vg+vb+1, vg+vb+vd
-   fact3 = fact3 + coeff*(cmplx(rm(a),pm(a))*cmplx(rn(a),-pn(a)))
+   fact3 = fact3 + coeff*(cmplx(rm(a),-pm(a))*cmplx(rn(a),pn(a)))
 end do
 end subroutine get_facts_pop
 
