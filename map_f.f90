@@ -121,7 +121,7 @@ MC: do mcs = 1, nmcs
       end do
       av2 = 2d0*kc*qc
 
-      call update_hm(a1,a2,av1,av2,pc,oc,qc,hm)
+      call get_hm(delta,mu,et,a1,a2,av1,av2,pc,oc,qc,hm)
       call make_hmtraceless(nmap,hm,tracelel)
 
       call evolve_rm(nmap,dt,hm,pm,rm)
@@ -347,29 +347,29 @@ trace = 3d0*kc
 f = f + kc
 end subroutine get_force_coupledosc
 
-subroutine update_hm(a1,a2,av1,av2,pc,oc,qc,hm)
-implicit none
-
-real(8),parameter :: eg=0, eb=240, ed=240
-
-real(8) :: ev
-real(8),intent(in) :: a1,a2,av1,av2,pc,oc,qc
-real(8),dimension(:,:),intent(inout) :: hm
-
-ev = 0.5d0*(pc**2 + (oc*qc)**2)
-
-!only diagonal part is updated
-!1 x 1
-hm(1,1) = 0d0
-hm(1,1) = eg + ev
-!2 x 2
-hm(2,2) = 0d0
-hm(2,2) = eb + ev + av1 - av2
-!3 x 3
-hm(3,3) = 0d0
-hm(3,3) = ed + ev + a1 + a2 + 0.25d0*av1 - 0.5d0*av2
-
-end subroutine update_hm
+!subroutine update_hm(a1,a2,av1,av2,pc,oc,qc,hm)
+!implicit none
+!
+!real(8),parameter :: eg=0, eb=240, ed=240
+!
+!real(8) :: ev
+!real(8),intent(in) :: a1,a2,av1,av2,pc,oc,qc
+!real(8),dimension(:,:),intent(inout) :: hm
+!
+!ev = 0.5d0*(pc**2 + (oc*qc)**2)
+!
+!!only diagonal part is updated
+!!1 x 1
+!hm(1,1) = 0d0
+!hm(1,1) = eg + ev
+!!2 x 2
+!hm(2,2) = 0d0
+!hm(2,2) = eb + ev + av1 - av2
+!!3 x 3
+!hm(3,3) = 0d0
+!hm(3,3) = ed + ev + a1 + a2 + 0.25d0*av1 - 0.5d0*av2
+!
+!end subroutine update_hm
 
 subroutine make_hmtraceless(nmap,hm,trace)
 implicit none
