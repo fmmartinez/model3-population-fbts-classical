@@ -9,7 +9,7 @@ real(8),parameter :: pi=3.1415926535d0, oc=37.7d0, kc=sqrt(10d0)*oc
 complex(8) :: coeff,fact1,fact2,fact3
 complex(8),dimension(:),allocatable :: pop,pop1,pop2,pop3
 
-integer :: i,j,ng,nb,nd,basispc,stp
+integer :: i,j,ng,nb,nd,basispc,stp,overflow
 integer :: np,nosc,nmcs,nmds,seed_dimension,bath,init,mcs,it,is,ib,ie,je
 !integer,dimension(:),allocatable :: seed
 
@@ -40,6 +40,7 @@ pop3 = 0d0
 dt  = 2d0*pi*dt
 dt2 = 0.5d0*dt
 
+overflow = 0
 MC: do mcs = 1, nmcs
    do is=1,nosc
       uj = 0.5d0*beta*dsqrt(kosc(is))
@@ -166,6 +167,9 @@ MC: do mcs = 1, nmcs
 !         write(69,'(i5,4f20.14)') it, eclas,tracelel/3d0,equan,etotal
 !         if (it == nmds) stop
 !      end if
+      if ((pop(ib) /= pop(ib)).or.(pop(ib)-1 == pop(ib))) then
+         overflow = overflow + 1
+      end if
    end do MD
 
    if (mod(mcs,1000) == 0) then
@@ -176,6 +180,8 @@ MC: do mcs = 1, nmcs
       close(444)
    end if
 end do MC
+
+print *, 'MC cycles', nmcs, 'with', overflow, 'overflows'
 
 do ib = 1, nmds+1
    pop1(ib) = pop1(ib)/pop(ib)
